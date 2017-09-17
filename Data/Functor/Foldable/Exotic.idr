@@ -22,10 +22,10 @@ meta f e g = ana f . e . cata g
 ||| transformation in between. This allows us to use more than one functor in a
 ||| hylomorphism.
 hyloPro : (Functor f, Functor g) => (f a -> a) -> ({c:_} -> g c -> f c) -> (b -> g b) -> b -> a
-hyloPro h e k x = h . e . map (hyloPro h e k) . k $ x
+hyloPro h e k = h . e . map (hyloPro h e k) . k
 
 ||| A dynamorphism builds up with an anamorphism and tears down with a
-||| histomorphism. Useful for lexical scoping.  
+||| histomorphism. Useful for lexical scoping.
 dynaPro : (Functor f, Functor g) => (f (Cofree f a) -> a) -> ({c:_} -> g c -> f c) -> (b -> g b) -> b -> a
 dynaPro phi eta psi = ghylo distHisto distAna phi (eta . map Id . psi)
 
@@ -42,16 +42,30 @@ interface (Functor f, Functor g) => CoSubHom (f : Type -> Type) (g : Type -> Typ
   psi : (Corecursive f t1) => (t1 -> f t1) -> (t2 -> g t2) -> (t2 -> g t2)
 
 ||| A dendromorphism simultaneously tears down two structures at once.
-dendro : (Recursive f1 t1, Base a1 f1, Recursive f2 t2, Recursive f1 a1, SubHom f1 f2 a1 a2, Base a2 f2, Subtype a2) => (f1 a1 -> a1) -> (f2 a2 -> a2) -> t2 -> a2
+dendro : ( Recursive f1 t1
+         , Base a1 f1
+         , Recursive f2 t2
+         , Recursive f1 a1
+         , SubHom f1 f2 a1 a2
+         , Base a2 f2
+         , Subtype a2
+         ) => (f1 a1 -> a1) -> (f2 a2 -> a2) -> t2 -> a2
 dendro = pseudocata .* phi where
   pseudocata f = c where
-    c x = switch . f . map (switch . c) . project $ x
+    c = switch . f . map (switch . c) . project
 
 ||| A chemamorphism builds up a structure using two base functors.
-chema : (Corecursive f1 t1, Base a1 f1, Corecursive f2 t2, Corecursive f1 a1, CoSubHom f1 f2 a1 a2, Base a2 f2, Subtype a2) => (a1 -> f1 a1) -> (a2 -> f2 a2) -> a2 -> t2
+chema : ( Corecursive f1 t1
+        , Base a1 f1
+        , Corecursive f2 t2
+        , Corecursive f1 a1
+        , CoSubHom f1 f2 a1 a2
+        , Base a2 f2
+        , Subtype a2
+        ) => (a1 -> f1 a1) -> (a2 -> f2 a2) -> a2 -> t2
 chema = pseudoana .* psi where
   pseudoana g = a where
-    a x = embed . map (a . switch) . g . switch $ x
+    a = embed . map (a . switch) . g . switch
 
 ||| Mendler's catamorphism
 mcata : ({y : _} -> ((y -> c) -> f y -> c)) -> Fix f -> c

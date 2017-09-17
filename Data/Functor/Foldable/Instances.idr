@@ -79,5 +79,7 @@ implementation Corecursive (ListF a) (List a) where
   embed (Cons x xs) = x::xs
 
 ||| Futumorphism
-futu' : (Base a (ListF t), Corecursive (ListF t) t) => (a -> (ListF t) (Free (ListF t) a)) -> a -> t
+futu' :  (Base a (ListF t), Corecursive (ListF t) t)
+      => (a -> (ListF t) (Free (ListF t) a))
+      -> a -> t
 futu' = gana distFutu
